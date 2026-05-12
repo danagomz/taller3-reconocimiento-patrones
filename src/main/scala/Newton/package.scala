@@ -134,19 +134,28 @@ package object Newton {
 
 
   // 5. FUNCIÓN RAIZNEWTON
-  def raizNewton(funcion: Expr, variable: Atomo, aproximacionInicial: Double, criterioParada: (Expr, Atomo, Double) => Boolean): Double = {
-    var aproximacionActual = aproximacionInicial
-    while (!criterioParada(funcion, variable, aproximacionActual)) {
-      val valorFuncion = evaluar(funcion, variable, aproximacionActual)
-      val derivadaFuncion = derivar(funcion, variable)
-      val valorDerivada = evaluar(derivadaFuncion, variable, aproximacionActual)
+  def raizNewton(funcionOriginal: Expr, variableDerivacion: Atomo, semillaInicial: Double, criterioParada: (Expr, Atomo, Double) => Boolean): Double = {
+    val funcionDerivada = derivar(funcionOriginal, variableDerivacion)
 
-      if (valorDerivada == 0.0) return aproximacionActual
+    def iterarNewton(estimadoActual: Double): Double = {
+      val cumpleCriterio = criterioParada(funcionOriginal, variableDerivacion, estimadoActual)
 
-      val siguienteAproximacion = aproximacionActual - (valorFuncion / valorDerivada)
-      aproximacionActual = siguienteAproximacion
+      if (cumpleCriterio) {
+        estimadoActual
+      } else {
+        val valorFuncion = evaluar(funcionOriginal, variableDerivacion, estimadoActual)
+        val valorDerivada = evaluar(funcionDerivada, variableDerivacion, estimadoActual)
+
+        if (valorDerivada == 0.0) {
+          estimadoActual
+        } else {
+          val mejorEstimado = estimadoActual - (valorFuncion / valorDerivada)
+          iterarNewton(mejorEstimado)
+        }
+      }
     }
-    aproximacionActual
+
+    iterarNewton(semillaInicial)
   }
 }
 
